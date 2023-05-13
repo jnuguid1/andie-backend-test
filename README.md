@@ -15,3 +15,6 @@ delete_item function: item_id
 edit_item function: item_attribute, new_value, item_id  
 create_order: business_id, account_id, tax  
 get_order_by_id function: account_id  
+
+Login html response returns login details from successful login in the headers.  
+get_all_orders and get_orders_by_id return a json as the response.
