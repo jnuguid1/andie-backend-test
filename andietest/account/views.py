@@ -21,8 +21,7 @@ def create_account(request):
   new_account.save()
   activity = Activity(account=new_account, page_visits=[])
   activity.save()
-  response = "You are creating an account"
-  return HttpResponse(response)
+  return HttpResponse()
 
 @csrf_protect
 @csrf_exempt
@@ -31,7 +30,6 @@ def delete_account(request):
   data = request.POST
   account = get_object_or_404(Account, pk=data.get("id"))
   account.delete()
-  response = "you are deleting an account"
   return HttpResponse(account)
 
 @csrf_protect
@@ -44,7 +42,16 @@ def login(request):
     username=data.get("username"), 
     password=data.get("password"),
   )
-  return HttpResponse(account)
+  response = HttpResponse(
+    headers={
+      "Username": account.username,
+      "Password": account.password,
+      "Full Name": account.full_name,
+      "Email": account.email,
+      "Phone Number": account.phone_number,
+    }
+  )
+  return response
 
 @csrf_protect
 @csrf_exempt
@@ -64,7 +71,7 @@ def update_activity(request):
     activity.save()
   except (KeyError, Activity.DoesNotExist):
     return Http404('Account not found')
-  return HttpResponse(activity)
+  return HttpResponse()
 
 @csrf_protect
 @csrf_exempt
@@ -78,8 +85,7 @@ def create_business(request):
     phone_number=data.get("phone_number"),
   )
   new_business.save()
-  response = "You are creating a business"
-  return HttpResponse(response)
+  return HttpResponse()
 
 @csrf_protect
 @csrf_exempt
@@ -88,8 +94,7 @@ def delete_business(request):
   data = request.POST
   business = get_object_or_404(Business, pk=data.get("id"))
   business.delete()
-  response = "You are deleting a business"
-  return HttpResponse(response)
+  return HttpResponse()
 
 @csrf_protect
 @csrf_exempt
@@ -104,11 +109,9 @@ def create_item(request):
       price=data.get("price", 0.0),
       quantity=data.get("quantity", 2),
     )
-    response = "You are creating an item"
-    return HttpResponse(response)
+    return HttpResponse()
   except (KeyError, Item.DoesNotExist):
     return Http404("Business does not exist")
-
 
 @csrf_protect
 @csrf_exempt
@@ -117,8 +120,7 @@ def delete_item(request):
   data=request.POST
   item = get_object_or_404(Item, pk=data.get("item_id"))
   item.delete()
-  response = "You are deleting an item"
-  return HttpResponse(response)
+  return HttpResponse()
 
 @csrf_protect
 @csrf_exempt
@@ -127,7 +129,6 @@ def edit_item(request):
   data=request.POST
   item_attribute = data.get("item_attribute")
   new_value = data.get("new_value")
-  response="You are editing an item"
   item = get_object_or_404(Item, pk=data.get("item_id"))
   try:
     if item_attribute == "item_name":
@@ -144,7 +145,7 @@ def edit_item(request):
       item.save()
     else:
         return Http404("Invalid attribute")
-    return HttpResponse(response)
+    return HttpResponse()
   except (KeyError, Item.DoesNotExist):
     return Http404("Item does not exist")
 
