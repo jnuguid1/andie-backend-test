@@ -30,3 +30,9 @@ class Item(models.Model):
     quantity = models.IntegerField(default=1, blank=True)
     def __str__(self):
        return self.item_name
+    
+class Order(models.Model):
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    products = models.JSONField()
+    tax = models.DecimalField(max_digits=4, decimal_places=2)

@@ -3,7 +3,7 @@ from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST, require_GET
 
-from account.models import Account, Activity, Business, Item
+from account.models import Account, Activity, Business, Item, Order
 
 # Create your views here.
 @csrf_protect
@@ -147,3 +147,33 @@ def edit_item(request):
     return HttpResponse(response)
   except (KeyError, Item.DoesNotExist):
     return Http404("Item does not exist")
+
+@csrf_protect
+@csrf_exempt
+@require_POST
+def create_order(request):
+  data=request.POST
+  order=Order(
+    business=Business.objects.get(pk=data.get("business_id")),
+    account=Account.objects.get(pk=data.get("account_id")),
+    products=[],
+    tax=data.get("tax", 0.00)
+  )
+  order.save()
+  return HttpResponse(order)
+
+@csrf_protect
+@csrf_exempt
+@require_GET
+def get_all_orders(request):
+  orders=Order.objects.all()
+  return HttpResponse(orders)
+
+@csrf_protect
+@csrf_exempt
+@require_GET
+def get_orders_by_id(request):
+  data=request.GET
+  account=Account.objects.get(pk=data.get("account_id"))
+  orders=account.order_set.all()
+  return HttpResponse(orders)

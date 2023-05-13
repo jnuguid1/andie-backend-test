@@ -12,4 +12,7 @@ urlpatterns = [
   path("edit-item/", views.edit_item, name="edit_item"),
   path("login/", views.login, name="login"),
   path("update-activity/", views.update_activity, name="update_activity"),
+  path("create-order/", views.create_order, name="create_order"),
+  path("get-all-orders/", views.get_all_orders, name="get_all_orders"),
+  path("get-orders-by-id/", views.get_orders_by_id, name="get_orders_by_id"),
 ]
