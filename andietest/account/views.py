@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse, Http404
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_GET
 
 from account.models import Account, Activity, Business, Item
 
@@ -19,7 +19,7 @@ def create_account(request):
       phone_number=data.get("phone", "555555555"),
     )
   new_account.save()
-  activity = Activity(account=new_account, page_visits={})
+  activity = Activity(account=new_account, page_visits=[])
   activity.save()
   response = "You are creating an account"
   return HttpResponse(response)
@@ -33,6 +33,38 @@ def delete_account(request):
   account.delete()
   response = "you are deleting an account"
   return HttpResponse(account)
+
+@csrf_protect
+@csrf_exempt
+@require_GET
+def login(request):
+  data = request.GET
+  account = get_object_or_404(
+    Account, 
+    username=data.get("username"), 
+    password=data.get("password"),
+  )
+  return HttpResponse(account)
+
+@csrf_protect
+@csrf_exempt
+@require_POST
+def update_activity(request):
+  data = request.POST
+  activity = get_object_or_404(
+    Activity, 
+    account=Account.objects.get(pk=data.get("id"))
+  )
+  try:
+    visits = activity.page_visits
+    if len(visits) >= 5:
+      visits.pop(0)
+    visits.append(data.get("activity_data", "new_activity_data"))
+    activity.page_visits = visits
+    activity.save()
+  except (KeyError, Activity.DoesNotExist):
+    return Http404('Account not found')
+  return HttpResponse(activity)
 
 @csrf_protect
 @csrf_exempt
@@ -87,3 +119,31 @@ def delete_item(request):
   item.delete()
   response = "You are deleting an item"
   return HttpResponse(response)
+
+@csrf_protect
+@csrf_exempt
+@require_POST
+def edit_item(request):
+  data=request.POST
+  item_attribute = data.get("item_attribute")
+  new_value = data.get("new_value")
+  response="You are editing an item"
+  item = get_object_or_404(Item, pk=data.get("item_id"))
+  try:
+    if item_attribute == "item_name":
+      item.item_name = new_value
+      item.save()
+    elif item_attribute == "category":
+      item.category = new_value
+      item.save()
+    elif item_attribute == "price":
+      item.price = new_value
+      item.save()
+    elif item_attribute == "quantity":
+      item.quantity = new_value
+      item.save()
+    else:
+        return Http404("Invalid attribute")
+    return HttpResponse(response)
+  except (KeyError, Item.DoesNotExist):
+    return Http404("Item does not exist")
