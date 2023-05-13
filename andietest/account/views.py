@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST, require_GET
 
@@ -168,7 +168,15 @@ def create_order(request):
 @require_GET
 def get_all_orders(request):
   orders=Order.objects.all()
-  return HttpResponse(orders)
+  order_array = []
+  for order in orders:
+    order_array.append({
+      "business_id": order.business.id,
+      "account": order.account.id,
+      "products": order.products,
+      "tax": order.tax
+    })
+  return JsonResponse({"orders": order_array})
 
 @csrf_protect
 @csrf_exempt
@@ -177,4 +185,12 @@ def get_orders_by_id(request):
   data=request.GET
   account=Account.objects.get(pk=data.get("account_id"))
   orders=account.order_set.all()
-  return HttpResponse(orders)
+  order_array=[]
+  for order in orders:
+    order_array.append({
+      "business_id": order.business.id,
+      "account": order.account.id,
+      "products": order.products,
+      "tax": order.tax
+    })
+  return JsonResponse({"orders": order_array})
